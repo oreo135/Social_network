@@ -1,7 +1,5 @@
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
-
 from backend.database import create_tables
 from backend.router import api_router  # Импортируем роутер для API
 

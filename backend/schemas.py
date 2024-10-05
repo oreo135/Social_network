@@ -1,10 +1,5 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import Column, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
-from backend.database import Base
-from typing import Optional
-
 
 # Схема для создания нового пользователя
 class UserCreate(BaseModel):
@@ -33,6 +28,3 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     bio: Optional[str] = None
     city: Optional[str] = None
-
-
-

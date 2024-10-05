@@ -1,32 +1,41 @@
-from backend.database import new_session
-from backend.models import User
+import asyncpg
+from backend.database import get_connection
 from backend.schemas import UserCreate, UserRead
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 class UserRepository:
-    @classmethod
-    async def add_one(cls, data: UserCreate) -> int:
-        """
-        Создание нового пользователя в базе данных
-        """
-        async with new_session() as session:  # Создаем новую сессию для работы с базой данных
-            user_dict = data.model_dump()  # Преобразуем Pydantic объект в словарь
+    @staticmethod
+    async def create_user(data: UserCreate) -> UserRead:
+        conn = await get_connection()
+        user_id = await conn.fetchval('''
+            INSERT INTO users (first_name, last_name, email, password, bio, city)
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
+        ''', data.first_name, data.last_name, data.email, data.password, data.bio, data.city)
+        await conn.close()
+        return UserRead(
+            id=user_id,
+            first_name=data.first_name,
+            last_name=data.last_name,
+            email=data.email,
+            bio=data.bio,
+            city=data.city
+        )
 
-            user = User(**user_dict)  # Создаем объект пользователя на основе словаря
-            session.add(user)  # Добавляем пользователя в сессию
-            await session.flush()  # Применяем изменения (чтобы получить сгенерированный ID)
-            await session.commit()  # Фиксируем изменения в базе данных
-            return user.id  # Возвращаем ID созданного пользователя
+    @staticmethod
+    async def get_all_users() -> list[UserRead]:
+        conn = await get_connection()
+        rows = await conn.fetch('''
+            SELECT id, first_name, last_name, email, bio, city FROM users
+        ''')
+        await conn.close()
+        return [UserRead(**dict(row)) for row in rows]
 
-    @classmethod
-    async def find_all(cls) -> list[UserRead]:
-        """
-        Получение всех пользователей из базы данных
-        """
-        async with new_session() as session:  # Создаем новую сессию для работы с базой данных
-            query = select(User)  # Создаем SQL-запрос для получения всех пользователей
-            result = await session.execute(query)  # Выполняем запрос
-            user_models = result.scalars().all()  # Получаем все объекты модели
-            user_schemas = [UserRead.model_validate(user_model) for user_model in user_models]  # Преобразуем модели в схемы Pydantic
-            return user_schemas  # Возвращаем список пользователей в виде схем
+    @staticmethod
+    async def get_user_by_id(user_id: int) -> UserRead:
+        conn = await get_connection()
+        row = await conn.fetchrow('''
+            SELECT id, first_name, last_name, email, bio, city FROM users WHERE id = $1
+        ''', user_id)
+        await conn.close()
+        if row is None:
+            return None
+        return UserRead(**dict(row))
