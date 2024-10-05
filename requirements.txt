@@ -3,5 +3,4 @@ sqlalchemy
 pydantic
 fastapi
 asyncpg
-sqlalchemy[asyncio]
-dotenv
+python-dotenv
