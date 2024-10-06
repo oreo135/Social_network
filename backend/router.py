@@ -21,6 +21,11 @@ async def create_user(user: UserCreate):
 async def get_users():
     return await UserRepository.get_all_users()
 
+@api_router.get("/search", response_model=list[UserRead])
+async def search_users(first_name: str, last_name: str):
+    return await UserRepository.search_users(first_name, last_name)
+
+
 # Получение пользователя по ID
 @api_router.get("/{user_id}", response_model=UserRead)
 async def get_user(user_id: int):
@@ -28,3 +33,4 @@ async def get_user(user_id: int):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+

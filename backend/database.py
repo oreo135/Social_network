@@ -14,7 +14,8 @@ async def get_connection():
 
 # Функция для создания таблиц в базе данных
 async def create_tables():
-    async with await get_connection() as conn:
+    conn = await get_connection()
+    try:
         await conn.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -36,13 +37,18 @@ async def create_tables():
                 city VARCHAR(100)
             )
         ''')
+    finally:
+        await conn.close()
 
 # Функция для удаления всех таблиц в базе данных
 async def delete_tables():
-    async with await get_connection() as conn:
+    conn = await get_connection()
+    try:
         await conn.execute('''
             DROP TABLE IF EXISTS users
         ''')
         await conn.execute('''
             DROP TABLE IF EXISTS test_users
         ''')
+    finally:
+        await conn.close()

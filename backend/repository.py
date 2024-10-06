@@ -97,3 +97,16 @@ class UserRepository:
             DELETE FROM users WHERE id = $1
         ''', user_id)
         await conn.close()
+
+    # Поиск пользователей по префиксу имени и фамилии
+    @staticmethod
+    async def search_users(first_name_prefix: str, last_name_prefix: str) -> List[UserRead]:
+        conn = await get_connection()
+        rows = await conn.fetch('''
+            SELECT id, first_name, last_name,  birthdate, city
+            FROM test_users
+            WHERE first_name LIKE $1 AND last_name LIKE $2
+            ORDER BY id
+        ''', f"{first_name_prefix}%", f"{last_name_prefix}%")
+        await conn.close()
+        return [UserRead(**dict(row)) for row in rows]
