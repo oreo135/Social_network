@@ -1,40 +1,52 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Загрузите данные из CSV-файла
-df = pd.read_csv('locust_stats.csv')
+# Папка с результатами (без индексов)
+results_folder = "test_results_with_hash_index"
 
-# Фильтруем данные, чтобы использовать только конкретные запросы, а не агрегированные данные
-filtered_df = df[df['Type'] == 'GET']
+# Папка для сохранения графиков
+output_folder = "gr_image_for_hash_index"
+os.makedirs(output_folder, exist_ok=True)
 
-# Проверим наличие данных
-print("Количество записей в данных:", len(filtered_df))
-print("Первые строки данных:", filtered_df.head())
+# Уровни нагрузки
+concurrency_levels = [10, 100, 1000]
 
-# Постройте график времени отклика и пропускной способности
-plt.figure(figsize=(12, 8))
+latency_data = []
+throughput_data = []
 
-# График времени отклика
-plt.subplot(2, 1, 1)
-plt.plot(filtered_df['Request Count'], filtered_df['Median Response Time'], label='Median Response Time', color='blue')
-plt.plot(filtered_df['Request Count'], filtered_df['Average Response Time'], label='Average Response Time', color='green')
-plt.plot(filtered_df['Request Count'], filtered_df['Min Response Time'], label='Min Response Time', linestyle='--', color='purple')
-plt.plot(filtered_df['Request Count'], filtered_df['Max Response Time'], label='Max Response Time', linestyle='--', color='red')
-plt.xlabel('Number of Requests')
-plt.ylabel('Response Time (ms)')
-plt.title('Response Time Metrics')
-plt.legend()
-plt.grid()
+# Чтение данных для каждого уровня нагрузки
+for users in concurrency_levels:
+    stats_file = f"{results_folder}/locust_{users}_users_stats.csv"
 
-# График пропускной способности
-plt.subplot(2, 1, 2)
-plt.plot(filtered_df['Request Count'], filtered_df['Requests/s'], label='Requests per Second', color='orange')
-plt.plot(filtered_df['Request Count'], filtered_df['Failures/s'], label='Failures per Second', color='red')
-plt.xlabel('Number of Requests')
-plt.ylabel('Requests and Failures per Second')
-plt.title('Throughput and Failures')
-plt.legend()
-plt.grid()
+    # Чтение файла с результатами
+    data = pd.read_csv(stats_file)
 
-plt.tight_layout()
-plt.show()
+    # Извлекаем среднее время отклика и пропускную способность
+    avg_latency = data['Average Response Time'].mean()  # Средняя задержка
+    avg_throughput = data['Requests/s'].mean()  # Пропускная способность (запросов в секунду)
+
+    latency_data.append(avg_latency)
+    throughput_data.append(avg_throughput)
+
+# Построение графика Latency (задержка)
+plt.figure()
+plt.plot(concurrency_levels, latency_data, marker='o')
+plt.title('Среднее время отклика (Latency) с индексом')
+plt.xlabel('Количество пользователей')
+plt.ylabel('Latency (ms)')
+plt.grid(True)
+# Сохраняем график Latency в папку
+plt.savefig(os.path.join(output_folder, "latency_with_index.png"))
+
+# Построение графика Throughput (пропускная способность)
+plt.figure()
+plt.plot(concurrency_levels, throughput_data, marker='o')
+plt.title('Пропускная способность (Throughput) с индексом')
+plt.xlabel('Количество пользователей')
+plt.ylabel('Запросов в секунду (Requests/s)')
+plt.grid(True)
+# Сохраняем график Throughput в папку
+plt.savefig(os.path.join(output_folder, "throughput_with_index.png"))
+
+print(f"Графики сохранены в папке {output_folder}")

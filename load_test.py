@@ -17,6 +17,7 @@ with open('users_data.csv', newline='', encoding='utf-8') as csvfile:
 # Проверяем, сколько пользователей загружено
 print(f"Загружено пользователей: {len(users)}")
 
+
 class UserLoadTest(HttpUser):
     wait_time = between(1, 5)
 
@@ -24,12 +25,21 @@ class UserLoadTest(HttpUser):
     def search_user(self):
         # Выбираем случайного пользователя из списка
         last_name, first_name = random.choice(users)
-        # Берем первую букву имени
+
+        # Берем первую букву имени и фамилии (префиксы)
         first_name_prefix = first_name[0]
+        last_name_prefix = last_name[0]
+
         # Логируем информацию о пользователе, по которому ищем
-        print(f"Ищем пользователя с фамилией: {last_name}, первая буква имени: {first_name_prefix}")
-        # Создаем и отправляем запрос с выбранной фамилией и первой буквой имени
-        response = self.client.get(f"/users/search?first_name={first_name_prefix}&last_name={last_name}")
+        print(
+            f"Ищем пользователя с фамилией, начинающейся с: {last_name_prefix}%, и именем, начинающимся с: {first_name_prefix}%")
+
+        # Создаем и отправляем запрос с выбранными префиксами
+        response = self.client.get(f"/users/search?first_name={first_name_prefix}&last_name={last_name_prefix}")
 
         # Логируем статус ответа
-        print(f"Статус ответа: {response.status_code}, Ищем: {last_name} {first_name_prefix}")
+        print(f"Статус ответа: {response.status_code}, Ищем: {last_name_prefix}% {first_name_prefix}%")
+
+        # Если запрос завершился с ошибкой, выводим детали
+        if response.status_code != 200:
+            print(f"Ошибка: {response.text}")
