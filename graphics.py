@@ -3,10 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Папка с результатами (без индексов)
-results_folder = "test_results_with_hash_index"
+results_folder = "test_results"
 
 # Папка для сохранения графиков
-output_folder = "gr_image_for_hash_index"
+output_folder = "gr_image_for_fulltext_index"
 os.makedirs(output_folder, exist_ok=True)
 
 # Уровни нагрузки
@@ -32,7 +32,7 @@ for users in concurrency_levels:
 # Построение графика Latency (задержка)
 plt.figure()
 plt.plot(concurrency_levels, latency_data, marker='o')
-plt.title('Среднее время отклика (Latency) с индексом')
+plt.title('Среднее время отклика (Latency) индекс fulltext')
 plt.xlabel('Количество пользователей')
 plt.ylabel('Latency (ms)')
 plt.grid(True)
@@ -42,7 +42,7 @@ plt.savefig(os.path.join(output_folder, "latency_with_index.png"))
 # Построение графика Throughput (пропускная способность)
 plt.figure()
 plt.plot(concurrency_levels, throughput_data, marker='o')
-plt.title('Пропускная способность (Throughput) с индексом')
+plt.title('Пропускная способность (Throughput) индекс fulltext')
 plt.xlabel('Количество пользователей')
 plt.ylabel('Запросов в секунду (Requests/s)')
 plt.grid(True)

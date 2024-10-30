@@ -1,1 +1,2 @@
 Method,Name,Error,Occurrences
+GET,/users/search?first_name=%D0%94&last_name=%D0%9A,"ConnectionResetError(104, 'Connection reset by peer')",1
